@@ -118,6 +118,7 @@ class User(db.Model):
             password=hashed_pwd,
             image_url=image_url,
         )
+        # image_url=image_url or None ?
 
         db.session.add(user)
         return user
