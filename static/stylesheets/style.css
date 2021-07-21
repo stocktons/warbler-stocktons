@@ -517,11 +517,7 @@ p.card-bio {
 
 .no-button {
   border: none;
-  background-color: white;
-}
-
-.no-button:focus {
-  outline: none;
+  background-color: transparent;
 }
 
 .messages-like-bottom {
