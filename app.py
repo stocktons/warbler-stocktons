@@ -4,8 +4,9 @@ from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
-from forms import UserAddForm, LoginForm, MessageForm
+from forms import UserAddForm, LoginForm, MessageForm, OnlyCsrfForm
 from models import db, connect_db, User, Message
+from werkzeug.exceptions import Unauthorized
 
 CURR_USER_KEY = "curr_user"
 
@@ -51,6 +52,7 @@ def do_logout():
 
     if CURR_USER_KEY in session:
         del session[CURR_USER_KEY]
+    
 
 
 @app.route('/signup', methods=["GET", "POST"])
@@ -113,7 +115,16 @@ def login():
 def logout():
     """Handle logout of user."""
 
-    # IMPLEMENT THIS
+    form = OnlyCsrfForm()
+
+    if form.validate_on_submit():
+        session.pop(CURR_USER_KEY)
+        flash("You've been logged out. Have a great day!")
+        return redirect("/login")
+
+    else:
+        # didn't pass CSRF; ignore logout attempt
+        raise Unauthorized()
 
 
 ##############################################################################
@@ -139,9 +150,9 @@ def list_users():
 @app.route('/users/<int:user_id>')
 def users_show(user_id):
     """Show user profile."""
-
+    
     user = User.query.get_or_404(user_id)
-
+   
     return render_template('users/show.html', user=user)
 
 
