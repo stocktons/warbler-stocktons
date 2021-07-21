@@ -321,7 +321,7 @@ def homepage():
         messages = (Message
                     .query
                     .order_by(Message.timestamp.desc())
-                    .filter(Message.user_id.in_(user_ids))
+                    .filter( (Message.user_id.in_(user_ids)) | (Message.user_id == g.user.id) )
                     .limit(100))
 
         return render_template('home.html', messages=messages)
