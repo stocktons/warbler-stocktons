@@ -115,16 +115,9 @@ def login():
 def logout():
     """Handle logout of user."""
 
-    form = OnlyCsrfForm()
-
-    if form.validate_on_submit():
-        session.pop(CURR_USER_KEY)
-        flash("You've been logged out. Have a great day!")
-        return redirect("/login")
-
-    else:
-        # didn't pass CSRF; ignore logout attempt
-        raise Unauthorized()
+    session.pop(CURR_USER_KEY)
+    flash("You've been logged out. Have a great day!")
+    return redirect("/login")
 
 
 ##############################################################################
