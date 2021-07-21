@@ -204,7 +204,6 @@ def stop_following(follow_id):
 
     return redirect(f"/users/{g.user.id}/following")
 
-
 @app.route('/users/profile', methods=["GET", "POST"])
 def profile():
     """Update profile for current user."""
@@ -285,6 +284,32 @@ def messages_show(message_id):
 
     msg = Message.query.get(message_id)
     return render_template('messages/show.html', message=msg)
+
+@app.route('/messages/<int:message_id>/like', methods=["POST"])
+def messages_like(message_id):
+    """Like a message."""
+
+    if not g.user:  
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    msg = Message.query.get(message_id)
+
+    # if already liked, remove from list, if not, add to list
+    # update database either way
+
+    if msg in g.user.likes:
+        g.user.likes.remove(msg) 
+    
+    else:
+        g.user.likes.append(msg)
+
+    db.session.commit()
+
+    return redirect("/")
+
+
+
 
 
 @app.route('/messages/<int:message_id>/delete', methods=["POST"])

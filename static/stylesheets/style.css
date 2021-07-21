@@ -515,6 +515,15 @@ p.card-bio {
   z-index: 1;
 }
 
+.no-button {
+  border: none;
+  background-color: white;
+}
+
+.no-button:focus {
+  outline: none;
+}
+
 .messages-like-bottom {
   position: absolute;
   bottom: 4px;

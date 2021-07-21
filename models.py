@@ -73,6 +73,7 @@ class User(db.Model):
     )
 
     messages = db.relationship('Message', order_by='Message.timestamp.desc()')
+    likes = db.relationship('Message', secondary='likes', backref='users')
 
     followers = db.relationship(
         "User",
@@ -87,6 +88,8 @@ class User(db.Model):
         primaryjoin=(Follows.user_following_id == id),
         secondaryjoin=(Follows.user_being_followed_id == id)
     )
+
+    
 
     def __repr__(self):
         return f"<User #{self.id}: {self.username}, {self.email}>"
@@ -171,6 +174,29 @@ class Message(db.Model):
     )
 
     user = db.relationship('User')
+    
+
+class Like(db.Model):
+    """An individual like/connection between a user and a message."""
+
+    __tablename__ = 'likes'
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True,
+    )
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete='CASCADE'),
+        nullable=False,
+    )
+
+    message_id = db.Column(
+        db.Integer,
+        db.ForeignKey('messages.id', ondelete='CASCADE'),
+        nullable=False,
+    )
 
 
 def connect_db(app):
