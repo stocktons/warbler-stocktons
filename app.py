@@ -52,7 +52,6 @@ def do_logout():
 
     if CURR_USER_KEY in session:
         del session[CURR_USER_KEY]
-    
 
 
 @app.route('/signup', methods=["GET", "POST"])
@@ -111,12 +110,15 @@ def login():
     return render_template('users/login.html', form=form)
 
 
+# Reminder: logout should be POST request
 @app.route('/logout')
 def logout():
     """Handle logout of user."""
 
-    session.pop(CURR_USER_KEY)
+    # call helper function from @app.before_request
+    do_logout()
     flash("You've been logged out. Have a great day!")
+    
     return redirect("/login")
 
 
@@ -216,8 +218,8 @@ def profile():
     if form.validate_on_submit():
         g.user.username = form.username.data  
         g.user.email = form.email.data   
-        g.user.image_url = form.image_url.data 
-        g.user.header_image_url = form.header_image_url.data  
+        g.user.image_url = form.image_url.data or User.image_url.default.arg
+        g.user.header_image_url = form.header_image_url.data or User.header_image_url.default.arg
         g.user.bio = form.bio.data   
         g.user.location = form.location.data  
 
@@ -233,8 +235,6 @@ def profile():
 
     else:
         return render_template("users/edit.html", form=form)
-
-
 
 
 @app.route('/users/delete', methods=["POST"])
@@ -314,14 +314,13 @@ def homepage():
     - logged in: 100 most recent messages of followed_users
     """
     
-    users_being_followed = g.user.following
-    user_ids = [user.id for user in users_being_followed]
+    user_ids = [user.id for user in g.user.following] + [g.user.id]
 
     if g.user:
         messages = (Message
                     .query
                     .order_by(Message.timestamp.desc())
-                    .filter( (Message.user_id.in_(user_ids)) | (Message.user_id == g.user.id) )
+                    .filter(Message.user_id.in_(user_ids))
                     .limit(100))
 
         return render_template('home.html', messages=messages)
