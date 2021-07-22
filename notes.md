@@ -29,3 +29,32 @@
 
     In our app, if a user is logged in, it adds the user to the Flask global object.
 
+
+################# forms.py
+
+
+class CsrfOnlyForm(FlaskForm):
+    """Empty form that can be used for CSRF validation."""
+
+
+################## app.y
+
+
+@app.before_request
+def add_csrf_only_form():
+    """Add a CSRF-only form so that every route can use it."""
+    g.csrf_form = CsrfOnlyForm()
+@app.route("/logout", methods=["POST"])
+def logout():
+    """Logout user and redirect to /blah."""
+    if g.csrf_form.validate_on_submit():
+        ... # do logout
+
+
+################# base.html
+
+
+    <form action="/logout" method="POST">
+      {{ g.csrf_form.hidden_tag() }}
+      <button>Log out</button>
+    </form>

@@ -57,7 +57,9 @@
           </div>
           <form class="messages-like">
             {{ form.hidden_tag() }}
-            <!-- think about time complexity -->
+            <!-- if messages_set is a set of all liked messages
+            then our retrieval will be O(1) 
+            if msg in messages_set -->
             {% if msg in g.user.likes %} 
               <button class="no-button" formmethod="POST" formaction="/messages/{{msg.id}}/togglelike"><i class="fas fa-star"></i></button>
             {% else %}
