@@ -56,7 +56,9 @@
             <p>{{ msg.text }}</p>
           </div>
           <form class="messages-like">
-            {% if msg in g.user.likes %}
+            {{ form.hidden_tag() }}
+            <!-- think about time complexity -->
+            {% if msg in g.user.likes %} 
               <button class="no-button" formmethod="POST" formaction="/messages/{{msg.id}}/like"><i class="fas fa-star"></i></button>
             {% else %}
               <button class="no-button" formmethod="POST" formaction="/messages/{{msg.id}}/like"><i class="far fa-star"></i></button>

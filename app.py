@@ -251,28 +251,40 @@ def user_show_likes(user_id):
 @app.route('/users/<int:message_id>/like', methods=["POST"])
 def user_like(message_id):
     """Handles a User's liked messages."""
+    
+    form = OnlyCsrfForm()
 
     if not g.user:  
         flash("Access unauthorized.", "danger")
         return redirect("/")
-
-    msg = Message.query.get(message_id)
-
-    if msg in g.user.likes:
-        g.user.likes.remove(msg) 
     
+    if form.validate_on_submit():
+        msg = Message.query.get(message_id)
+
+        if msg.user_id != g.user.id:
+            if msg in g.user.likes:
+                g.user.likes.remove(msg) 
+            
+            else:
+                g.user.likes.append(msg)
+
+            db.session.commit()
+
+            return redirect(f"/users/{g.user.id}/likes")
+        else:
+            flash("You can't like your own posts!")
+            return redirect("/")
     else:
-        g.user.likes.append(msg)
-
-    db.session.commit()
-
-    return redirect(f"/users/{g.user.id}/likes")
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
 
 
 @app.route('/users/delete', methods=["POST"])
 def delete_user():
     """Delete user."""
 
+    # add csrf
+    
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
@@ -318,28 +330,37 @@ def messages_show(message_id):
     msg = Message.query.get(message_id)
     return render_template('messages/show.html', message=msg)
 
+
+# rename route and doc string if combining like and unlike logic
 @app.route('/messages/<int:message_id>/like', methods=["POST"])
 def messages_like(message_id):
     """Like a message."""
 
+    form = OnlyCsrfForm()
+    
     if not g.user:  
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    msg = Message.query.get(message_id)
-
-    # if already liked, remove from list, if not, add to list
-    # update database either way
-
-    if msg in g.user.likes:
-        g.user.likes.remove(msg) 
+    if form.validate_on_submit:
+        msg = Message.query.get(message_id)
+        
+        if msg.user_id != g.user.id:
+            if msg in g.user.likes:
+                g.user.likes.remove(msg) 
     
+            else:
+                g.user.likes.append(msg)
+
+            db.session.commit()
+
+            return redirect("/")
+        else:
+            flash("You can't like your own posts!")
+            return redirect("/")
     else:
-        g.user.likes.append(msg)
-
-    db.session.commit()
-
-    return redirect("/")
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
 
 
 @app.route('/messages/<int:message_id>/delete', methods=["POST"])
@@ -368,6 +389,7 @@ def homepage():
     - anon users: no messages
     - logged in: 100 most recent messages of followed_users
     """
+    form = OnlyCsrfForm()
     
     user_ids = [user.id for user in g.user.following] + [g.user.id]
 
@@ -378,7 +400,7 @@ def homepage():
                     .filter(Message.user_id.in_(user_ids))
                     .limit(100))
 
-        return render_template('home.html', messages=messages)
+        return render_template('home.html', messages=messages, form=form)
 
     else:
         return render_template('home-anon.html')
