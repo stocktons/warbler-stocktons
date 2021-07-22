@@ -275,8 +275,7 @@ def user_like(message_id):
             flash("You can't like your own posts!")
             return redirect("/")
     else:
-        flash("Access unauthorized.", "danger")
-        return redirect("/")
+        raise Unauthorized()
 
 
 @app.route('/users/delete', methods=["POST"])
@@ -360,8 +359,7 @@ def messages_toggle_like(message_id):
             flash("You can't like your own posts!")
             return redirect("/")
     else:
-        flash("Access unauthorized.", "danger")
-        return redirect("/")
+        raise Unauthorized()
 
 
 @app.route('/messages/<int:message_id>/delete', methods=["POST"])
