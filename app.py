@@ -250,7 +250,7 @@ def user_show_likes(user_id):
 
 @app.route('/users/<int:message_id>/like', methods=["POST"])
 def user_like(message_id):
-    """Handles a User's liked messages."""
+    """Shows a User's liked messages and handles unliking a message."""
     
     form = OnlyCsrfForm()
 
@@ -300,6 +300,7 @@ def delete_user():
 ##############################################################################
 # Messages routes:
 
+
 @app.route('/messages/new', methods=["GET", "POST"])
 def messages_add():
     """Add a message:
@@ -332,9 +333,9 @@ def messages_show(message_id):
 
 
 # rename route and doc string if combining like and unlike logic
-@app.route('/messages/<int:message_id>/like', methods=["POST"])
-def messages_like(message_id):
-    """Like a message."""
+@app.route('/messages/<int:message_id>/togglelike', methods=["POST"])
+def messages_toggle_like(message_id):
+    """Handles liking or unliking a message."""
 
     form = OnlyCsrfForm()
     
