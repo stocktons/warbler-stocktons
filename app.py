@@ -391,10 +391,10 @@ def homepage():
     - logged in: 100 most recent messages of followed_users
     """
     form = OnlyCsrfForm()
-    
-    user_ids = [user.id for user in g.user.following] + [g.user.id]
 
     if g.user:
+        user_ids = [user.id for user in g.user.following] + [g.user.id]
+
         messages = (Message
                     .query
                     .order_by(Message.timestamp.desc())

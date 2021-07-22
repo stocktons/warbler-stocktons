@@ -35,13 +35,15 @@ db.create_all()
 USER1_DATA = {
     "email" : "test@test.com",
     "username" : "testuser",
-    "password" : "HASHED_PASSWORD"
+    "password" : "HASHED_PASSWORD",
+    "image_url" : "",
 }
 
 USER2_DATA = {
     "email" : "test2@test.com",
     "username" : "testuser2",
-    "password" : "HASHED_PASSWORD"
+    "password" : "HASHED_PASSWORD",
+    "image_url" : "",
 }
 
 class UserModelTestCase(TestCase):
@@ -54,8 +56,8 @@ class UserModelTestCase(TestCase):
         Message.query.delete()
         Follows.query.delete()
 
-        user1 = User(**USER1_DATA)
-        user2 = User(**USER2_DATA)
+        user1 = User.signup(**USER1_DATA)
+        user2 = User.signup(**USER2_DATA)
         
         db.session.add_all([user1, user2])
         db.session.commit()
@@ -148,7 +150,7 @@ class UserModelTestCase(TestCase):
     def test_invalid_signup(self):
         """Does User.signup fail to create a new user if given invalid credentials?"""
         
-        bad_user = User.signup("testuser", "testuser@test.com", "password", "")
+        User.signup("testuser", "testuser@test.com", "password", "")
                 
         # integrity error is the related to database (repeated data)
         # with self.assertRaises(exc.IntegrityError) :
@@ -156,4 +158,22 @@ class UserModelTestCase(TestCase):
         
         self.assertRaises(exc.IntegrityError, db.session.commit)
         
-        # test sending in wrong data type
+    def test_invalid_password(self):
+        """Does User.signup fail to create a new user if given empty password?"""
+
+        with self.assertRaises(ValueError): 
+            User.signup("testuser", "testuser@test.com", "", "")
+
+  
+    def test_signin(self):
+        """Does User.authenticate successfully return a user given valid username and password?"""
+
+        test_user = User.authenticate(self.user1.username, USER1_DATA["password"])
+    
+        self.assertTrue(test_user)
+       
+    
+
+
+        
+        
