@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, render_template, request, flash, redirect, session, g
+from flask import Flask, render_template, request, flash, redirect, session, g, url_for
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
@@ -187,7 +187,7 @@ def add_follow(follow_id):
     g.user.following.append(followed_user)
     db.session.commit()
 
-    return redirect(f"/users/{g.user.id}/following")
+    return redirect(url_for('show_following'))
 
 
 @app.route('/users/stop-following/<int:follow_id>', methods=['POST'])
@@ -202,7 +202,7 @@ def stop_following(follow_id):
     g.user.following.remove(followed_user)
     db.session.commit()
 
-    return redirect(f"/users/{g.user.id}/following")
+    return redirect(url_for('show_following'))
 
 @app.route('/users/profile', methods=["GET", "POST"])
 def profile():
@@ -230,7 +230,7 @@ def profile():
 
         db.session.commit()
 
-        return redirect(f"/users/{g.user.id}")
+        return redirect(url_for('users_show'))
 
     else:
         return render_template("users/edit.html", form=form)
@@ -270,7 +270,7 @@ def user_like(message_id):
 
             db.session.commit()
 
-            return redirect(f"/users/{g.user.id}/likes")
+            return redirect(url_for('users_show_likes'))
         else:
             flash("You can't like your own posts!")
             return redirect("/")
@@ -318,7 +318,7 @@ def messages_add():
         g.user.messages.append(msg)
         db.session.commit()
 
-        return redirect(f"/users/{g.user.id}")
+        return redirect(url_for('users_show'))
 
     return render_template('messages/new.html', form=form)
 
@@ -376,7 +376,7 @@ def messages_destroy(message_id):
     db.session.delete(msg)
     db.session.commit()
 
-    return redirect(f"/users/{g.user.id}")
+    return redirect(url_for('users_show'))
 
 
 ##############################################################################
