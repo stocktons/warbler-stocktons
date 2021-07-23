@@ -4,9 +4,8 @@
 #
 #    python -m unittest test_user_model.py
 
-from inspect import unwrap
 import os
-from re import U # what is this?
+
 from unittest import TestCase
 
 from sqlalchemy.exc import IntegrityError
@@ -62,13 +61,15 @@ class UserModelTestCase(TestCase):
         db.session.commit()
 
         self.client = app.test_client()
+        # set it to the user's id
         self.user1 = user1
         self.user2 = user2
         
     def tearDown(self):
         """Clean up fouled transactions."""
-
+        # TestCase doesn't have it's own tearDown
         res = super().tearDown()
+        # if my superclass has a tearDown, use it 
         db.session.rollback()
         return res
 
@@ -155,11 +156,15 @@ class UserModelTestCase(TestCase):
         # with self.assertRaises(exc.IntegrityError) :
         #     db.session.commit()
         
-        self.assertRaises(exc.IntegrityError, db.session.commit)
+        # assertRaises takes a callback
+        self.assertRaises(IntegrityError, db.session.commit)
         
     def test_invalid_password(self):
         """Does User.signup fail to create a new user if given empty password?"""
 
+        # `with` is a context manager
+        # within this block of code, do something 'special'
+        # wrapping it with assertRaises
         with self.assertRaises(ValueError): 
             User.signup("testuser", "testuser@test.com", "", "")
 

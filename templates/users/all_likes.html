@@ -22,6 +22,8 @@
             <form class="messages-like">
                 <button class="no-button" formmethod="POST" formaction="/users/{{message.id}}/like"><i class="fas fa-star"></i></button>
             </form>
+            <!-- don't show a star for user's own messages -->
+
             <p>{{ message.text }}</p>
           </div>
         </li>

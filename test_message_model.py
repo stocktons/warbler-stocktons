@@ -4,9 +4,8 @@
 #
 #    python -m unittest test_user_model.py
 
-from inspect import unwrap
 import os
-from re import U # what is this?
+
 from unittest import TestCase
 
 from sqlalchemy.exc import IntegrityError
@@ -20,6 +19,7 @@ bcrypt = Bcrypt()
 # connected to the database
 
 os.environ['DATABASE_URL'] = "postgresql:///warbler_test"
+# how to check or set environmental variables (shell variables)
 
 # Now we can import app
 
@@ -30,7 +30,6 @@ from app import app
 # and create fresh new clean test data
 
 db.create_all()
-print('created')
 
 USER1_DATA = {
     "email" : "test@test.com",
@@ -52,9 +51,9 @@ class MessageModelTestCase(TestCase):
     def setUp(self):
         """Create test client, add sample data."""
 
+        # Follows.query.delete()
+        # Message.query.delete()
         User.query.delete()
-        Message.query.delete()
-        Follows.query.delete()
 
         user1 = User.signup(**USER1_DATA)
         user2 = User.signup(**USER2_DATA)
@@ -110,7 +109,9 @@ class MessageModelTestCase(TestCase):
         self.assertNotIn(self.m1, self.user2.likes)
         
     
-    
+    # def test_like_own_message(self):
+    #     """Tests that user cannot like their own message(s)"""
+        # create a method on the model that returns false if user tries to like own message
         
-        
+        # list comprehension over likes that finds the users
         
