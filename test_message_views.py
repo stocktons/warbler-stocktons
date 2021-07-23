@@ -122,14 +122,32 @@ class MessageViewTestCase(TestCase):
         db.session.commit()
             
         with self.client as c:
-            resp = c.post(f"/messages/{msg.id}/delete", follow_redirects=True)
+            resp = c.get(f"/messages/{msg.id}/delete", follow_redirects=True)
             html = resp.get_data(as_text=True)
             
             self.assertEqual(resp.status_code, 200)
             self.assertIn("Access unauthorized", html)
+            
+    def test_show_message(self):
+        """Show a specific message."""
 
-    # show a specific message when logged in (show route)
-    
-    # prohibit viewing a message that doesn't exist 
-    #   try accessing message id of 0
-    #   should get 404 error
+        msg = Message(text="This is a message", user_id=self.testuser.id)
+        
+        db.session.add(msg)
+        db.session.commit()
+
+        with self.client as c:
+            resp = c.get(f"/messages/{msg.id}")
+            html = resp.get_data(as_text=True)
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("This is a message", html)
+
+    def test_no_show_nonexistent_message(self):
+        """Show 404 error if user tries to access a message that doesn't exist"""
+
+        with self.client as c:
+            resp = c.get("/messages/007")
+
+        self.assertEqual(resp.status_code, 404)
+      
