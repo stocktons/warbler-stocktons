@@ -356,7 +356,7 @@ def messages_toggle_like(message_id):
             return redirect("/")
             # consider turning liked messages into a set() for faster retrieval 
             # liked_messages = set(messages)
-            # and instead of redirecting to "/" we can render home.html with liked_meessages passed in
+            # and instead of redirecting to "/" we can render home.html with liked_messages passed in
         else:
             flash("You can't like your own posts!")
             return redirect("/")

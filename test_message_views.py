@@ -32,6 +32,7 @@ db.create_all()
 app.config['WTF_CSRF_ENABLED'] = False
 
 
+
 class MessageViewTestCase(TestCase):
     """Test views for messages."""
 
@@ -47,11 +48,13 @@ class MessageViewTestCase(TestCase):
                                     email="test@test.com",
                                     password="testuser",
                                     image_url=None)
-
         db.session.commit()
+        
+       
+       
 
     def test_add_message(self):
-        """Can use add a message?"""
+        """Can user add a message?"""
 
         # Since we need to change the session to mimic logging in,
         # we need to use the changing-session trick:
@@ -70,3 +73,29 @@ class MessageViewTestCase(TestCase):
 
             msg = Message.query.one()
             self.assertEqual(msg.text, "Hello")
+            
+    def test_delete_message(self):
+        """Can user delete a message?"""
+
+        # Since we need to change the session to mimic logging in,
+        # we need to use the changing-session trick:
+        
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.testuser.id
+
+            msg = Message(text="This is a message", user_id=sess[CURR_USER_KEY])
+        
+            db.session.add(msg)
+            db.session.commit()
+
+            # Now, that session setting is saved, so we can have
+            # the rest of ours test
+
+            resp = c.post(f"/messages/{msg.id}/delete", follow_redirects=True)
+            html = resp.get_data(as_text=True)
+
+            # Make sure it redirects
+            self.assertEqual(resp.status_code, 200)
+            self.assertNotIn("This is a message", html)
+
