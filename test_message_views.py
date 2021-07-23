@@ -15,7 +15,7 @@ from models import db, connect_db, Message, User
 # before we import our app, since that will have already
 # connected to the database
 
-os.environ['DATABASE_URL'] = "postgresql:///warbler-test"
+os.environ['DATABASE_URL'] = "postgresql:///warbler_test"
 
 # Now we can import app
 
@@ -39,19 +39,23 @@ class MessageViewTestCase(TestCase):
     def setUp(self):
         """Create test client, add sample data."""
 
-        User.query.delete()
         Message.query.delete()
+        User.query.delete()
 
         self.client = app.test_client()
 
-        self.testuser = User.signup(username="testuser",
+        testuser = User.signup(username="testuser",
                                     email="test@test.com",
                                     password="testuser",
                                     image_url=None)
         db.session.commit()
         
-       
-       
+        self.testuser = User.query.filter_by(username=testuser.username).first()
+
+        # detached instance error: assigning self.testuser before committing to database
+        # if we want to use testuser's id, we never get their id until commit() happens
+        # if we access self.testuser.id we can potentially run into an error
+        
 
     def test_add_message(self):
         """Can user add a message?"""
@@ -74,28 +78,58 @@ class MessageViewTestCase(TestCase):
             msg = Message.query.one()
             self.assertEqual(msg.text, "Hello")
             
-    def test_delete_message(self):
-        """Can user delete a message?"""
-
-        # Since we need to change the session to mimic logging in,
-        # we need to use the changing-session trick:
+    
+    def test_add_message_logged_out_fail(self):
+        """Prevent from adding messages when logged out."""
         
+        with self.client as c:
+            resp = c.post('/messages/new', data={"text": "Hello"}, follow_redirects=True)
+            html = resp.get_data(as_text=True)
+            
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("Access unauthorized", html)
+            
+            
+    def test_delete_message(self):
+        """Test deleting a message."""
+
         with self.client as c:
             with c.session_transaction() as sess:
                 sess[CURR_USER_KEY] = self.testuser.id
 
-            msg = Message(text="This is a message", user_id=sess[CURR_USER_KEY])
-        
+            # msg = Message(text="This is a message", user_id=sess[CURR_USER_KEY])
+            msg = Message(text="This is a message", user_id=self.testuser.id)
+
             db.session.add(msg)
             db.session.commit()
-
-            # Now, that session setting is saved, so we can have
-            # the rest of ours test
+            # could have queried for msg id here
 
             resp = c.post(f"/messages/{msg.id}/delete", follow_redirects=True)
             html = resp.get_data(as_text=True)
+            m = Message.query.get(msg.id) # purposely getting something that we know is None
 
-            # Make sure it redirects
             self.assertEqual(resp.status_code, 200)
             self.assertNotIn("This is a message", html)
+            self.assertIsNone(m) # to confirm that m is None because message no longer exists
 
+
+    def test_delete_logged_out_fail(self):
+        """Prohibits deleting messages when logged out."""
+        
+        msg = Message(text="This is a message", user_id=self.testuser.id)
+        
+        db.session.add(msg)
+        db.session.commit()
+            
+        with self.client as c:
+            resp = c.post(f"/messages/{msg.id}/delete", follow_redirects=True)
+            html = resp.get_data(as_text=True)
+            
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("Access unauthorized", html)
+
+    # show a specific message when logged in (show route)
+    
+    # prohibit viewing a message that doesn't exist 
+    #   try accessing message id of 0
+    #   should get 404 error

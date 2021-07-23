@@ -327,7 +327,7 @@ def messages_add():
 def messages_show(message_id):
     """Show a message."""
 
-    msg = Message.query.get(message_id)
+    msg = Message.query.get_or_404(message_id)
     return render_template('messages/show.html', message=msg)
 
 
@@ -364,11 +364,11 @@ def messages_toggle_like(message_id):
         raise Unauthorized()
 
 
-@app.route('/messages/<int:message_id>/delete', methods=["POST"])
+@app.route('/messages/<int:message_id>/delete', methods=["GET", "POST"])
 def messages_destroy(message_id):
     """Delete a message."""
 
-    if not g.user:
+    if not g.user and request.method == 'GET':
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
