@@ -9,8 +9,7 @@ import os
 from re import U # what is this?
 from unittest import TestCase
 
-from app import IntegrityError
-from sqlalchemy import exc
+from sqlalchemy.exc import IntegrityError
 
 from models import db, User, Message, Follows, Bcrypt
 bcrypt = Bcrypt()
@@ -20,7 +19,7 @@ bcrypt = Bcrypt()
 # before we import our app, since that will have already
 # connected to the database
 
-os.environ['DATABASE_URL'] = "postgresql:///warbler-test"
+os.environ['DATABASE_URL'] = "postgresql:///warbler_test"
 
 # Now we can import app
 
@@ -47,7 +46,7 @@ USER2_DATA = {
 }
 
 class UserModelTestCase(TestCase):
-    """Test views for messages."""
+    """Test models for users."""
 
     def setUp(self):
         """Create test client, add sample data."""
@@ -172,8 +171,21 @@ class UserModelTestCase(TestCase):
     
         self.assertTrue(test_user)
        
-    
+       
+    def test_invalid_username_signin(self):
+        """Does User.authenticate fail to return a user when given an invalid username?"""
 
+        test_user = User.authenticate("baduser_name", USER1_DATA["password"])
+    
+        self.assertFalse(test_user)
+    
+    
+    def test_invalid_password_signin(self):
+        """Does User.authenticate fail to return a user when given an invalid username?"""
+
+        test_user = User.authenticate(self.user1.username, "baduser_password")
+    
+        self.assertFalse(test_user)
 
         
         
