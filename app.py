@@ -35,7 +35,7 @@ def add_user_to_g():
     """If we're logged in, add curr user to Flask global."""
 
     if CURR_USER_KEY in session:
-        g.user = User.query.get(session[CURR_USER_KEY])
+        g.user = User.query.get_or_404(session[CURR_USER_KEY])
 
     else:
         g.user = None
@@ -132,7 +132,7 @@ def list_users():
     Can take a 'q' param in querystring to search by that username.
     """
 
-    search = request.args.get('q')
+    search = request.args.get_or_404('q')
 
     if not search:
         users = User.query.all()
@@ -198,7 +198,7 @@ def stop_following(follow_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    followed_user = User.query.get(follow_id)
+    followed_user = User.query.get_or_404(follow_id)
     g.user.following.remove(followed_user)
     db.session.commit()
 
@@ -259,7 +259,7 @@ def user_like(message_id):
         return redirect("/")
     
     if form.validate_on_submit():
-        msg = Message.query.get(message_id)
+        msg = Message.query.get_or_404(message_id)
 
         if msg.user_id != g.user.id:
             if msg in g.user.likes:
@@ -342,7 +342,7 @@ def messages_toggle_like(message_id):
         return redirect("/")
 
     if form.validate_on_submit:
-        msg = Message.query.get(message_id)
+        msg = Message.query.get_or_404(message_id)
         
         if msg.user_id != g.user.id:
             if msg in g.user.likes:
@@ -372,7 +372,7 @@ def messages_destroy(message_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    msg = Message.query.get(message_id)
+    msg = Message.query.get_or_404(message_id)
     db.session.delete(msg)
     db.session.commit()
 
