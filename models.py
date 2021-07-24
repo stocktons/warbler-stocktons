@@ -106,7 +106,24 @@ class User(db.Model):
 
         found_user_list = [user for user in self.following if user == other_user]
         return len(found_user_list) == 1
-
+    
+    # rename function to validate if we should be changing the passwords
+    # return true or false then call change_password
+    def change_password(self, current, new_password, confirm_password):
+        """If the user is logged in and they provide the right password and their new passwords match, change their password."""
+        
+        password_matches = bcrypt.check_password_hash(self.password, current)
+    
+        if (password_matches) and (new_password == confirm_password):
+            return User.hash_password(new_password)
+    
+    # change to instance method, call it change_password, do the actual changing
+    @classmethod
+    def hash_password(cls, password):
+        """Returns a hashed password."""
+        
+        return bcrypt.generate_password_hash(password).decode('UTF-8')
+    
     @classmethod
     def signup(cls, username, email, password, image_url):
         """Sign up user.

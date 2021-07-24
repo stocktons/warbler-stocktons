@@ -4,7 +4,7 @@ from flask import Flask, render_template, request, flash, redirect, session, g, 
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
-from forms import UserAddForm, LoginForm, MessageForm, OnlyCsrfForm, UserEditForm
+from forms import ChangePasswordForm, UserAddForm, LoginForm, MessageForm, OnlyCsrfForm, UserEditForm
 from models import db, connect_db, User, Message
 from werkzeug.exceptions import Unauthorized
 
@@ -213,6 +213,7 @@ def profile():
         return redirect("/")
 
     form = UserEditForm(obj=g.user)
+    form2 = ChangePasswordForm()
 
     if form.validate_on_submit():
         g.user.username = form.username.data  
@@ -233,7 +234,35 @@ def profile():
         return redirect(url_for('users_show'))
 
     else:
-        return render_template("users/edit.html", form=form)
+        return render_template("users/edit.html", form=form, form2=form2)
+    
+
+@app.route('/users/change_password', methods=["POST"])
+def change_password():
+    """Change password for current user."""
+    
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+    
+    form2 = ChangePasswordForm()
+    
+    if form2.validate_on_submit():
+        g.user.current = form2.current.data
+        g.user.new_password = form2.new_password.data
+        g.user.confirm_password = form2.confirm_password.data
+        
+        breakpoint()
+        g.user.password = g.user.change_password(g.user.current, 
+                                                 g.user.new_password, 
+                                                 g.user.confirm_password)
+      
+        db.session.commit()
+        flash("Password changed successfully!")
+        return redirect('/')
+    else:
+        return render_template("users/edit.html", form2=form2)
+    
     
 @app.route('/users/<int:user_id>/likes')
 def user_show_likes(user_id):
