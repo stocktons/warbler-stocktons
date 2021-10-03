@@ -136,7 +136,7 @@ def list_users():
     Can take a 'q' param in querystring to search by that username.
     """
 
-    search = request.args.get_or_404('q')
+    search = request.args.get('q')
 
     if not search:
         users = User.query.all()
@@ -149,10 +149,10 @@ def list_users():
 @app.route('/users/<int:user_id>')
 def users_show(user_id):
     """Show user profile."""
-    
     user = User.query.get_or_404(user_id)
+    form = OnlyCsrfForm()
    
-    return render_template('users/show.html', user=user)
+    return render_template('users/show.html', user=user, form=form)
 
 
 @app.route('/users/<int:user_id>/following')
@@ -191,7 +191,7 @@ def add_follow(follow_id):
     g.user.following.append(followed_user)
     db.session.commit()
 
-    return redirect(url_for('show_following'))
+    return redirect(f'/users/{g.user.id}/following')
 
 
 @app.route('/users/stop-following/<int:follow_id>', methods=['POST'])
@@ -206,7 +206,7 @@ def stop_following(follow_id):
     g.user.following.remove(followed_user)
     db.session.commit()
 
-    return redirect(url_for('show_following'))
+    return redirect(f'/users/{g.user.id}/following')
 
 @app.route('/users/profile', methods=["GET", "POST"])
 def profile():
@@ -235,7 +235,8 @@ def profile():
 
         db.session.commit()
 
-        return redirect(url_for('users_show'))
+        id = g.user.id
+        return redirect(f'/users/{id}')
 
     else:
         return render_template("users/edit.html", form=form, form2=form2)
@@ -255,8 +256,6 @@ def change_password():
         g.user.current = form2.current.data
         g.user.new_password = form2.new_password.data
         g.user.confirm_password = form2.confirm_password.data
-        
-        breakpoint()
         g.user.password = g.user.change_password(g.user.current, 
                                                  g.user.new_password, 
                                                  g.user.confirm_password)
@@ -276,9 +275,10 @@ def user_show_likes(user_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
     
+    form = OnlyCsrfForm()
     user = User.query.get_or_404(user_id)
     
-    return render_template('users/all_likes.html', user=user)
+    return render_template('users/all_likes.html', user=user, form=form)
 
 
 @app.route('/users/<int:message_id>/like', methods=["POST"])
@@ -303,7 +303,7 @@ def user_like(message_id):
 
             db.session.commit()
 
-            return redirect(url_for('users_show_likes'))
+            return redirect(f'/users/{g.user.id}/')
         else:
             flash("You can't like your own posts!")
             return redirect("/")
@@ -351,7 +351,9 @@ def messages_add():
         g.user.messages.append(msg)
         db.session.commit()
 
-        return redirect(url_for('users_show'))
+        id = g.user.id
+
+        return redirect(f'/users/{id}')
 
     return render_template('messages/new.html', form=form)
 
@@ -367,14 +369,14 @@ def messages_show(message_id):
 @app.route('/messages/<int:message_id>/togglelike', methods=["POST"])
 def messages_toggle_like(message_id):
     """Handles liking or unliking a message."""
-
+   
     form = OnlyCsrfForm()
     
     if not g.user:  
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    if form.validate_on_submit:
+    if g.user and form.is_submitted:
         msg = Message.query.get_or_404(message_id)
         
         if msg.user_id != g.user.id:
@@ -409,7 +411,7 @@ def messages_destroy(message_id):
     db.session.delete(msg)
     db.session.commit()
 
-    return redirect(url_for('users_show'))
+    return redirect(f"/users/{g.user.id}")
 
 
 ##############################################################################

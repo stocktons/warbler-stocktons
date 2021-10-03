@@ -6,7 +6,7 @@
       {% for message in user.messages %}
 
         <li class="list-group-item">
-          <a href="/messages/{{ message.id }}" class="message-link"/>
+          <a href="/messages/{{ message.id }}" class="message-link"></a>
 
           <a href="/users/{{ user.id }}">
             <img src="{{ user.image_url }}" alt="user image" class="timeline-image">
@@ -19,6 +19,20 @@
             </span>
             <p>{{ message.text }}</p>
           </div>
+
+          <form class="messages-like">
+            {{ form.hidden_tag() }}
+            {% if message.user.id != g.user.id %}
+            {% if message in g.user.likes %}
+            <button class="no-button" formmethod="POST" formaction="/messages/{{message.id}}/togglelike"><i
+                class="fas fa-star"></i></button>
+            {% else %}
+            <button class="no-button" formmethod="POST" formaction="/messages/{{message.id}}/togglelike"><i
+                class="far fa-star"></i></button>
+            {% endif %}
+            {% endif %}
+          </form>
+
         </li>
 
       {% endfor %}

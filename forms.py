@@ -1,4 +1,3 @@
-from typing import BinaryIO
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, TextAreaField
 from wtforms.fields.simple import TextField

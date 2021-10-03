@@ -8,24 +8,22 @@
       {% for message in user.likes %}
 
         <li class="list-group-item">
-          <a href="/messages/{{ message.id }}" class="message-link"/>
+          <a href="/messages/{{ message.id }}" class="message-link"></a>
 
           <a href="/users/{{ message.user.id }}">
             <img src="{{ message.user.image_url }}" alt="user image" class="timeline-image">
           </a>
-
           <div class="message-area">
             <a href="/users/{{ message.user.id }}">@{{ message.user.username }}</a>
-            <span class="text-muted">
-              {{ message.timestamp.strftime('%d %B %Y') }}
-            </span>
-            <form class="messages-like">
-                <button class="no-button" formmethod="POST" formaction="/users/{{message.id}}/like"><i class="fas fa-star"></i></button>
-            </form>
-            <!-- don't show a star for user's own messages -->
-
+            <span class="text-muted">{{ message.timestamp.strftime('%d %B %Y') }}</span>
             <p>{{ message.text }}</p>
+           
           </div>
+          <form class="messages-like">
+            {{ form.hidden_tag() }}
+            
+            <button class="no-button" formmethod="POST" formaction="/messages/{{message.id}}/togglelike"><i class="fas fa-star"></i></button>
+          </form>
         </li>
 
       {% endfor %}
